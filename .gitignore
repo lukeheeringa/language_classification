@@ -1,6 +1,7 @@
 # User added
 audio/
 data/timeseries/
+.DS_Store
 
 # --Python Template--
 # Byte-compiled / optimized / DLL files
