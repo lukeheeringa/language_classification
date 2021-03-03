@@ -7,6 +7,7 @@ March 4, 2021
 
 #### Problem Statement
 
+Can machine learning be used to identify the language being spoken in an audio clip? 
 
 #### Executive Summary
 
@@ -23,10 +24,20 @@ coffee consumers are much more likely to be talking about specific brands of cof
 
 Finally, digging into the prediction probabilities given by the model showed where its major weaknesses are. Despite the use of lemmatization with a pre-existing library and the removal of stop words, the processing was unable to account for certain punctuation formattings (like a "/" directly in between two words) or misspellings (like "coffe" instead of "coffee" or "chamomille" instead of "chamomile"). This indicates that there is room for improvement in the NLP techniques being used, as more robust expression parsing and word recognition could lead to even higher accuracy models in the future. 
 
-#### File Directory
-- README.md : this file, containing the project summary, file directory, and data dictionary
+#### Sources
 
-- presentation_slides.pdf : a pdf version of the Google Slides presentation given on January 22, 2021 (note that some information changed between the model used for presentation and the final submission)
+- [Audio Lingua](https://www.audio-lingua.eu/?lang=en) (note: site flagged for potential risk)
+- [EveryTongue](http://www.everytongue.com/)
+- [Omniglot](https://omniglot.com/soundfiles/)
+- [VoxForge](http://www.voxforge.org/home/downloads)
+- [Common Voice](https://commonvoice.mozilla.org/en/datasets)
+
+
+#### File Directory
+- README.md
+
+- presentation_slides.pdf : a pdf version of the Google Slides presentation given on January 22, 2021
+
 
 - code 
     - 01_data_collection.ipynb : process and functions used for the collection of data via the Pushshift reddit API
