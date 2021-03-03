@@ -9,52 +9,79 @@ March 4, 2021
 
 Can machine learning be used to identify the language being spoken in an audio clip? 
 
-#### Executive Summary
+#### Summary
 
-The scope of this project is intended to cover the use of web APIs, natural language processing (NLP), and the comparison of classification models. To begin, the Pushshift reddit API was used to collect 5000 posts from the subreddits r/Coffee and r/tea. After cleaning, the remaining 4607 post titles and associated subreddit labels were split into a training set (75% of the data) and a test set (25% of the data). Multiple NLP techniques and classification models were then tested to find the overall model setup that was best equipped to accurately classify titles that it had not yet seen. 
+This project uses neural networks to classify audio clips as belonging to one of five major world languages. The ability to identify spoken language could have several applications, such as being used to connect clients with appropriate interpretation services over the telephone or as a tool to contextualize what language is being spoken before basic AI attempts to transcribe or translate audio or video recordings. 
 
-The ultimate model chosen incorporated a CountVectorizer that transformed 1 and 2 word tokens included in a minimum of 2 post titles into numeric data by counting their occurences in each post title. Tokens were formed with WordNet lemmatization to standardize conjugations and remove irrelevant "stop words." The count vector features were then standard scaled and fed into a logistic regression model with an l1 penalty term, a C value of 0.05, and a maximum of 100 iterations. This model was able to correctly classify 92.1% of the titles it had not previously been exposed to. 
+The five languages chosen as classes are English (en), Spanish (es), French (fr), Russian (ru), and Mandarin Chinese (zh). File names and code generally refer to them by their ISO 639-1 two letter abbreviations indicated in parentheses. These languages are five of the eight most spoken languages worldwide, each with over 250 million fluent speakers (the other three are Hindi, Arabic, and Bengali, but those samples are much less common online). 
 
-#### Key Findings
+Data samples consisted of 5 second clips of human speech sampled at a frequency of 16,000 kHz. Samples came from five different online sources with a variety of speaker genders, ages, dialects, background noise, and audio quality. Any clips in the training set longer than 5 seconds may have been split into multiple individual clips for additional information, but the validation set remained uncontaminated. 
 
-While the types of words that were most important in classifying post titles as coming from one subreddit or the other were not particularly surprising ("coffee", "grinder", or "espresso" for r/Coffee or "tea", "teapot", and "matcha" for r/tea), their inclusion was still important. In the future, a model like this could easily be deployed across other subreddits or even other social media platforms like Facebook, Twitter, or Instagram in order to identify users as clearly discussing coffee or tea. By classifying what kind of product someone is already talking about, advertisers could best target them with products specific to their interests. 
+The python librosa library was used to load audio files in .wav or .mp3 formats into time series of 80,000 points (5 seconds * 16kHz). These timeseries were then transformed into their Mel frequency cepstrum coefficients (mfccs), a technique using Fourier transformation and a rolling window time period to reduce a sound wave into components. Each additional coefficient calculated represents a diminishing portion of the overall variance, so 10 mfccs were chosen to balance computational complexity while preserving audio information. 
 
-In addition, the enumeration of key terms for r/Coffee and r/tea did reveal a split between the two: 
-coffee consumers are much more likely to be talking about specific brands of coffee makers or related products. Words like "aeropress", "v60", and "moccamaster" being commonplace in coffee discussion circles show coffee drinkers to be exhibiting brand loyalty and word of mouth advertising. In comparison, tea consumers have few such commonly discussed products. This discrepency shows that there could be a rich market opportunity for tea makers or even coffee product makers to expand and develop more recognizable, branded products for tea. 
+The final data were then matrices of 10 rows and 157 columns, representing 10 layered time series across a span of 157 rolling average frequencies in the clip. Over 80,000 samples were used for training, with over 8,000 reserved for validation. The classes were approximately evenly distributed in both the training and validation sets, with each language representing between 18 and 21% of the whole. The null accuracy of predicting every sample to be English was 19.8%. 
 
-Finally, digging into the prediction probabilities given by the model showed where its major weaknesses are. Despite the use of lemmatization with a pre-existing library and the removal of stop words, the processing was unable to account for certain punctuation formattings (like a "/" directly in between two words) or misspellings (like "coffe" instead of "coffee" or "chamomille" instead of "chamomile"). This indicates that there is room for improvement in the NLP techniques being used, as more robust expression parsing and word recognition could lead to even higher accuracy models in the future. 
+The matrices were used as inputs for several tested neural network architectures. Dense layer only models reached a maximum final validation accuracy of 37.5%, or not quite twice the null accuracy. The most effective architecture was found to be the use of gated recurrent units (GRUs). The maximum final validation accuracy of the GRU model with bidirectionality was 58.2%, or just under three times the null accuracy. The large separation between the validation and training accuracies (58.2 vs 77.0) indicates that there is still potential to improve the model either with stricter sample quality verification, alternative processing techniques, or possibly the implementation of a pre-trained network with audio represented as spectrograms. 
 
-#### Sources
+The final model most accurately classified the Russian language, correctly identifying 79.5% of the Russian validation clips. The worst performing language was English, with only 40.1% of English validation clips being correctly identified. One potential cause of the poor performance on the English language may be that the samples represented the largest variety of speakers, as although all five languages have numerous dialects, English, as the most commonly spoken language in the world, likely has the most internet contributers of varying national identity and first language. The most common misclassifications were all between the three western European languages of English, Spanish, and French, possibly showing that Russian and Mandarin were unique enough to be identified more often.  
 
-- [Audio Lingua](https://www.audio-lingua.eu/?lang=en) (note: site flagged for potential risk)
+#### Audio Data Sources
+
+- [Audio Lingua](https://www.audio-lingua.eu/?lang=en)
+- [Common Voice](https://commonvoice.mozilla.org/en/datasets)
 - [EveryTongue](http://www.everytongue.com/)
 - [Omniglot](https://omniglot.com/soundfiles/)
 - [VoxForge](http://www.voxforge.org/home/downloads)
-- [Common Voice](https://commonvoice.mozilla.org/en/datasets)
 
 
 #### File Directory
 - README.md
 
-- presentation_slides.pdf : a pdf version of the Google Slides presentation given on January 22, 2021
+- presentation_slides.pdf
 
 
 - code 
-    - 01_data_collection.ipynb : process and functions used for the collection of data via the Pushshift reddit API
-    - 02_cleaning.ipynb : code transforming the raw data into useable form
-    - 03_EDA.ipynb : exploratory data analysis, including several visualizations of the data
-    - 04_modeling.ipynb : walkthrough of the modeling techniques attempted, including various vectorization and classification models 
-    - 05_findings.ipynb : a deeper dive into the final selected model's features and classification limitations
+    - 01_audiolingua_scraping.ipynb : data collection, part 1
+    - 02_everytongue_scraping.ipynb : data collection, part 2
+    - 03_voxforge_scraping.ipynb : data collection, part 3
+    - 04_audio_processing.ipynb : data processing, part 1
+    - 05_mfcc_processing.ipynb : data processing, part 2
+    - 06_cv_processing.ipynb : data processing, part 3
+    - 07_age_and_gender.ipynb : exploratory data analysis, part 1
+    - 08_mfcc_EDA.ipynb : exploratory data analysis, part 2
+    - 09_dense_model.ipynb : modeling, part 1
+    - 10_gru_model.ipynb : modeling, part 2
 
 
-- data
-    - cleaned_posts.csv : the cleaned dataset of reddit posts
-    - posts.csv : the data as pulled from the Pushshift reddit API
+- models
+    - gru_model_split552.h5 : the final keras model built in notebook 10
 
 
-- grid_search
-    - logisticregression.csv : saved results of hyperparameter searching on a logisitic regression model
-    - naivebayes.csv : saved results of hyperparameter searching on a naive bayes model
-    - randomforest.csv : saved results of hyperparameter searching on a random forest model
-    - svc.csv : saved results of hyperparameter searching on a support vector classification model
-    - vectorizers.csv : saved results of vectorizer and hyperparameter searching (using a naive bayes classifier)
+- streamlit
+    - classification_app.py : streamlit application with audio recording and prediction capability
+
+
+- Procfile : used for launching streamlit application on heroku
+
+- setup.sh : used for launching streamlit application on heroku
+
+- requirements.txt : a listing of the virtual environment requirements used for the streamlit app ()
+
+- full_requirements.txt : a complete listing of the virtual environment requirements used for the entire project
+
+- .gitignore : a listing of the files to be excluded from the git repository due to size or lack of necessity
+
+Additionally, the following directories were used to build this project, but were excluded due to file size: 
+
+- audio
+    - 1_audiolingua (subfolders 'en' and 'zh') : audio files from audio-lingua
+    - 2_everytongue (subfolders 'es', 'fr', 'ru', and 'zh') : audio files from everytongue
+    - 3_omniglot (subfolders 'en', 'es', 'fr', 'ru', and 'zh') : audio files from omniglot
+    - 4_voxforge (subfolders 'en', 'es', 'fr', and 'ru') : audio files from voxforge
+    - v_commonvoice (subfolders 'en', 'es', 'fr', 'ru', and 'zh') : audio files from commonvoice
+ 
+ 
+ - data
+    - timeseries (subfolders 'en', 'es', 'fr', 'ru', and 'zh') : saved timeseries representations of audio clips
+    - training  : saved mfcc and target arrays for sources 1-4
+    - validation : saved mfcc and target arrays for commonvoice clips
