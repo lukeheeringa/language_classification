@@ -1,12 +1,12 @@
 import streamlit as st
 import numpy as np
-import tensorflow-cpu.keras
+import tensorflow.keras
 import librosa
 import sounddevice as sd
 import io
 from scipy.io.wavfile import write
 
-model = tensorflow-cpu.keras.models.load_model('../models/gru_model_split552.h5')
+model = tensorflow.keras.models.load_model('../models/gru_model_split552.h5')
 
 st.title('Audio Language Classification')
 
