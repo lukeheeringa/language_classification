@@ -31,7 +31,7 @@ The final model most accurately classified the Russian language, correctly ident
 
 #### Application
 
-The streamlit application included in the repository will be launched in the near future. 
+The streamlit application included in the repository will be launched in a future revision.
 
 #### Audio Data Sources
 
